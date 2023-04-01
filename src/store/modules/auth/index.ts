@@ -5,7 +5,8 @@ import { fetchSession } from '@/api'
 
 interface SessionResponse {
   auth: boolean
-  model: 'ChatGPTAPI' | 'ChatGPTUnofficialProxyAPI'
+  model: 'ChatGPTAPI' | 'ChatGPTUnofficialProxyAPI',
+
 }
 
 export interface AuthState {
@@ -26,18 +27,28 @@ export const useAuthStore = defineStore('auth-store', {
   },
 
   actions: {
-    async getSession() {
+    async getSession(form: { phoneNumber: string | null; password: string | null; checkPassword?: string | null | undefined }) {
       try {
-        const { data } = await fetchSession<SessionResponse>()
-        this.session = { ...data }
-        return Promise.resolve(data)
+        const { status, data } = await fetchSession<SessionResponse>(form)
+
+        if (status === 'Success') {
+          this.session = { ...data }
+          localStorage.setItem('pp-token', data.token)
+          return Promise.resolve(true)
+        } else {
+
+          return Promise.resolve(false)
+        }
+
+
       }
       catch (error) {
-        return Promise.reject(error)
+        return Promise.resolve(false)
       }
     },
 
     setToken(token: string) {
+
       this.token = token
       setToken(token)
     },

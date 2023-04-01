@@ -1,10 +1,15 @@
 <script setup lang='ts'>
 import { defineAsyncComponent, ref } from 'vue'
 import { HoverButton, SvgIcon, UserAvatar } from '@/components/common'
-
+import { useRouter } from 'vue-router'
+const router = useRouter
 const Setting = defineAsyncComponent(() => import('@/components/common/Setting/index.vue'))
 
 const show = ref(false)
+const handleLoginOut = async () => {
+  localStorage.removeItem('pp-token')
+  location.reload()
+}
 </script>
 
 <template>
@@ -18,7 +23,13 @@ const show = ref(false)
         <SvgIcon icon="ri:settings-4-line" />
       </span>
     </HoverButton>
+    <HoverButton @click="handleLoginOut()">
+      <span class="text-xl text-[#e72c2c] dark:text-white">
+        <SvgIcon icon="ic:sharp-log-out" />
+      </span>
+    </HoverButton>
 
-    <Setting v-if="show" v-model:visible="show" />
+
+    <!-- <Setting v-if="show" v-model:visible="show" /> -->
   </footer>
 </template>

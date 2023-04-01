@@ -18,5 +18,6 @@ export const useUserStore = defineStore('user-store', {
     recordState() {
       setLocalState(this.$state)
     },
+
   },
 })

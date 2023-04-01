@@ -25,7 +25,8 @@ export function fetchChatAPIProcess<T = any>(
     prompt: string
     options?: { conversationId?: string; parentMessageId?: string }
     signal?: GenericAbortSignal
-    onDownloadProgress?: (progressEvent: AxiosProgressEvent) => void },
+    onDownloadProgress?: (progressEvent: AxiosProgressEvent) => void
+  },
 ) {
   const settingStore = useSettingStore()
 
@@ -37,9 +38,10 @@ export function fetchChatAPIProcess<T = any>(
   })
 }
 
-export function fetchSession<T>() {
+export function fetchSession<T>(form: { phoneNumber: string | null; password: string | null; checkPassword?: string | null | undefined; }) {
   return post<T>({
     url: '/session',
+    data: form
   })
 }
 
@@ -47,5 +49,16 @@ export function fetchVerify<T>(token: string) {
   return post<T>({
     url: '/verify',
     data: { token },
+  })
+}
+/**
+ * 
+ * @param form 用户注册
+ * @returns 
+ */
+export function fecthReister<T>(form) {
+  return post<T>({
+    url: '/verify',
+    data: form,
   })
 }
