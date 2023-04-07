@@ -56,7 +56,7 @@ export function fetchVerify<T>(token: string) {
  * @param form 用户注册
  * @returns 
  */
-export function fecthReister<T>(form) {
+export function fecthReister<T>(form: { phoneNumber: string | null; password: string | null; checkPassword?: string | null | undefined; }) {
   return post<T>({
     url: '/verify',
     data: form,
