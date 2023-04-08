@@ -60,9 +60,10 @@
                             </template>
                         </n-input>
                     </n-form-item>
-                    <!-- <div class="flex items-center justify-end">
-                        <n-button quaternary type="primary" @click="isRegister = true">注册</n-button>
-                    </div> -->
+                    <div class="flex items-center justify-end">
+                        <!-- <n-button quaternary type="primary" @click="isRegister = true">注册</n-button> -->
+                        <n-checkbox v-model:checked="loginForm.remember" :on-update:checked="updateCheck">记住密码</n-checkbox>
+                    </div>
                     <n-form-item>
                         <n-button type="primary" style="width:100%" @click="handleSubmit">登录</n-button>
                     </n-form-item>
@@ -74,24 +75,28 @@
     </div>
 </template>
 <script setup lang="ts">
-import { NForm, NFormItem, NInput, NInputNumber, NButton, NImage, FormRules, FormItemRule, FormInst, useMessage } from 'naive-ui'
+import { NForm, NFormItem, NInput, NInputNumber, NButton, NImage, NCheckbox, FormRules, FormItemRule, FormInst, useMessage } from 'naive-ui'
 import { SvgIcon } from '@/components/common'
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useAuthStoreWithout } from '@/store/modules/auth'
 
 import { fecthReister } from '@/api'
 import { useRouter } from 'vue-router'
+import { enCrypto, deCrypto } from '@/utils/crypto'
 
 import md5 from 'js-md5'
-import { setToken } from '@/store/modules/auth/helper'
 const router = useRouter()
 const authStore = useAuthStoreWithout()
 const msg = useMessage()
+
 interface form {
     phoneNumber: string | null
-    password: string | null
+    password: string | null | undefined
     checkPassword?: string | null
+    remember?: boolean
+    remberPassword?: string | null | undefined
 }
+
 const refLoginForm = ref<FormInst | null>(null)
 const refRegisterForm = ref<FormInst | null>(null)
 const registerForm = ref<form>({
@@ -106,7 +111,9 @@ const defaultReisterForm = {
 }
 const loginForm = ref<form>({
     phoneNumber: null,
-    password: null
+    password: null,
+    remember: false,
+    remberPassword: null
 })
 const rules: FormRules = {
     phoneNumber: [
@@ -183,11 +190,14 @@ const handleSubmit = async () => {
 
     refLoginForm.value?.validate(err => {
         if (!err) {
-
+            loginForm.value.remember && (loginForm.value.remberPassword = JSON.stringify(loginForm.value.password))
             loginForm.value.password = md5(loginForm.value.password)
             try {
+                console.log('记住密码', loginForm.value)
                 authStore.getSession(loginForm.value).then((res: any) => {
-
+                    if (loginForm.value.remember) {
+                        localStorage.setItem('remember', enCrypto(JSON.stringify(loginForm.value)))
+                    }
                     if (res) {
                         msg.success('登录成功')
                         router.push({
@@ -223,6 +233,21 @@ const closeReisterForm = async (type: number) => {
     }
 
 }
+const updateCheck = async (check: boolean) => {
+    loginForm.value.remember = check
+    if (!check)
+        localStorage.removeItem('remember')
+}
+onMounted(() => {
+
+    const form = localStorage.getItem('remember')
+    if (form) {
+
+        loginForm.value = JSON.parse(deCrypto(form))
+        loginForm.value.password = JSON.parse(loginForm.value.remberPassword)
+    }
+
+})
 </script>
 <style lang="less" scoped>
 .login-wapper {
